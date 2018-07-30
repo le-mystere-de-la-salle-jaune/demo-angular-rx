@@ -2,18 +2,13 @@ import { Injectable } from '@angular/core';
 import { Post } from './post';
 import { HttpClient } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
+import { from, of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PostService {
-
-  posts: Post[] = [
-    new Post('article 1', 'contenu 1'),
-    new Post('article 2', 'contenu 2'),
-    new Post('article 3', 'contenu 3'),
-  ];
 
   // création d'un magazine de nouveaux articles locaux
   private _subNewPost: Subject<Post> = new Subject();
@@ -44,11 +39,17 @@ export class PostService {
   }
 
   listPosts(): Observable<Post[]> {
-    const posts$ = this._http.get('https://jsonplaceholder.typicode.com/posts')
-      .pipe(
-        map((postsExterne: any[]) => postsExterne.map(pE => new Post(pE.title, pE.body)))
-      );
-    return posts$;
+
+    if (localStorage.posts) {
+      return of(JSON.parse(localStorage.posts));
+    } else {
+      const posts$ = this._http.get('https://jsonplaceholder.typicode.com/posts')
+        .pipe(
+          map((postsExterne: any[]) => postsExterne.map(pE => new Post(pE.title, pE.body))),
+          tap(posts => localStorage.posts = JSON.stringify(posts)
+          );
+      return posts$;
+    }
   }
 
   savePost(post: Post): void {
