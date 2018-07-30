@@ -46,8 +46,8 @@ export class PostService {
       const posts$ = this._http.get('https://jsonplaceholder.typicode.com/posts')
         .pipe(
           map((postsExterne: any[]) => postsExterne.map(pE => new Post(pE.title, pE.body))),
-          tap(posts => localStorage.posts = JSON.stringify(posts)
-          );
+          tap(posts => localStorage.posts = JSON.stringify(posts))
+        );
       return posts$;
     }
   }
